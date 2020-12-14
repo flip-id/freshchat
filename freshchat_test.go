@@ -13,7 +13,7 @@ func TestSendNotificationHSM(t *testing.T) {
 
 	fixture := `{ "message_id": "id-123", "status": "200", "message": "Success" }`
 	responder := httpmock.NewStringResponder(200, fixture)
-	fakeUrl := baseUrl + SendHsmEndpoint
+	fakeUrl := baseUrl + sendMessageUrl
 	httpmock.RegisterResponder("POST", fakeUrl, responder)
 
 	config := Config{
@@ -22,7 +22,7 @@ func TestSendNotificationHSM(t *testing.T) {
 		ClientKey: "ck-key",
 	}
 	sender := New(config)
-	reqMsg := ReqWaMessage{
+	reqMsg := RequestBody{
 		ClientId:        "123",
 		ProjectId:       "0123",
 		Type:            "template_name",
@@ -56,7 +56,7 @@ func TestFailSendNotificationHSM(t *testing.T) {
 		ClientKey: "ck-key",
 	}
 	sender := New(config)
-	reqMsg := ReqWaMessage{
+	reqMsg := RequestBody{
 		ClientId:        "123",
 		ProjectId:       "0123",
 		Type:            "template_name",

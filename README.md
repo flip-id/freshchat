@@ -1,2 +1,2 @@
-# Wappin
-Wappin API client library. https://wappin.id
+# Freshchat
+Freshchat API client library using Go. https://developers.freshchat.com/api/#whatsapp
