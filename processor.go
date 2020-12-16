@@ -1,4 +1,4 @@
-package freshchat_client
+package freshchat
 
 import (
 	"encoding/json"

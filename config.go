@@ -1,4 +1,4 @@
-package freshchat_client
+package freshchat
 
 import (
 	"github.com/go-resty/resty/v2"
