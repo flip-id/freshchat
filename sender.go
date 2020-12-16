@@ -1,4 +1,4 @@
-package freshchat
+package freshchat_client
 
 type WhatsappRequest struct {
 	FromPhoneNumber string
