@@ -6,95 +6,103 @@ import (
 	"testing"
 )
 
-func TestSendNotificationHSM(t *testing.T) {
-	httpmock.ActivateNonDefault(client.GetClient())
-	defer httpmock.DeactivateAndReset()
-	mockGetAccessToken()
+func TestSendWhatsappMessage(t *testing.T) {
+	t.Run("success case", func(t *testing.T) {
+		httpmock.ActivateNonDefault(client.GetClient())
+		defer httpmock.DeactivateAndReset()
 
-	fixture := `{ "message_id": "id-123", "status": "200", "message": "Success" }`
-	responder := httpmock.NewStringResponder(200, fixture)
-	fakeUrl := baseUrl + sendMessageUrl
-	httpmock.RegisterResponder("POST", fakeUrl, responder)
+		mockResponse := `{ 
+			"request_id": "0fcdd6b6-1f80-4643-a294-8e0625ce30dd", 
+			"request_process_time": "1", 
+			"link": {
+				"rel": "string",
+				"href": "string"
+			}
+		}`
+		responder := httpmock.NewStringResponder(202, mockResponse)
+		url := baseUrl + sendMessageUrl
+		httpmock.RegisterResponder("POST", url, responder)
 
-	config := Config{
-		ProjectId: "0123",
-		SecretKey: "cs-key",
-		ClientKey: "ck-key",
-	}
-	sender := New(config)
-	reqMsg := RequestBody{
-		ClientId:        "123",
-		ProjectId:       "0123",
-		Type:            "template_name",
-		RecipientNumber: "089891234123",
-		Params: map[string]string{
-			"1": "John",
-			"2": "Depok",
-		},
-	}
+		request := WhatsappRequest{
+			FromPhoneNumber: "+62876543210",
+			ToPhoneNumber:   "+62891011121",
+			TemplateName:    "account_registration",
+			HeaderParams:    []string{"Test"},
+			BodyParams:      []string{"Test"},
+		}
 
-	res, _ := sender.SendMessage(reqMsg)
+		result, err := SendWhatsappMessage(request)
 
-	assert.Equal(t, "id-123", res.MessageId)
-	assert.Equal(t, "200", res.Status)
-	assert.Equal(t, "Success", res.Message)
+		assertNoError(t, err)
+
+		assert.Equal(t, true, result.IsSuccess, "IsSuccess")
+		assert.Equal(t, 202, result.HttpStatusCode, "HttpStatusCode")
+		assert.Equal(t, "0fcdd6b6-1f80-4643-a294-8e0625ce30dd", result.Message, "Message")
+		assert.Equal(t, mockResponse, result.RawData, "RawData")
+	})
+
+	t.Run("failed case", func(t *testing.T) {
+		httpmock.ActivateNonDefault(client.GetClient())
+		defer httpmock.DeactivateAndReset()
+
+		mockResponse := `{ 
+			"code": 404,
+			"status": "AGENT_NOT_FOUND",
+			"message": "agent not found"
+		}`
+		responder := httpmock.NewStringResponder(404, mockResponse)
+		url := baseUrl + sendMessageUrl
+		httpmock.RegisterResponder("POST", url, responder)
+
+		request := WhatsappRequest{
+			FromPhoneNumber: "+62876543210",
+			ToPhoneNumber:   "+62891011121",
+			TemplateName:    "account_registration",
+			HeaderParams:    []string{"Test"},
+			BodyParams:      []string{"Test"},
+		}
+
+		result, err := SendWhatsappMessage(request)
+
+		assertNoError(t, err)
+
+		assert.Equal(t, false, result.IsSuccess, "IsSuccess")
+		assert.Equal(t, 404, result.HttpStatusCode, "HttpStatusCode")
+		assert.Equal(t, "agent not found", result.Message, "Message")
+		assert.Equal(t, mockResponse, result.RawData, "RawData")
+	})
+
+	t.Run("error case", func(t *testing.T) {
+		httpmock.ActivateNonDefault(client.GetClient())
+		defer httpmock.DeactivateAndReset()
+
+		mockResponse := `{ 
+			"Internal server error"
+		}`
+		responder := httpmock.NewStringResponder(500, mockResponse)
+		url := baseUrl + sendMessageUrl
+		httpmock.RegisterResponder("POST", url, responder)
+
+		request := WhatsappRequest{
+			FromPhoneNumber: "+62876543210",
+			ToPhoneNumber:   "+62891011121",
+			TemplateName:    "account_registration",
+			HeaderParams:    []string{"Test"},
+			BodyParams:      []string{"Test"},
+		}
+
+		_, err := SendWhatsappMessage(request)
+
+		if err == nil {
+			t.Errorf("Want an error but didn't get one")
+		}
+	})
 }
 
-func TestFailSendNotificationHSM(t *testing.T) {
-	httpmock.ActivateNonDefault(client.GetClient())
-	defer httpmock.DeactivateAndReset()
-	mockGetAccessToken()
+func assertNoError(t *testing.T, err error) {
+	t.Helper()
 
-	fixture := `{ "message_id": "id-124", "status": "600", "message": "Not delivered, Contact validate Failed" }`
-	responder := httpmock.NewStringResponder(200, fixture)
-	fakeUrl := baseUrl + SendHsmEndpoint
-	httpmock.RegisterResponder("POST", fakeUrl, responder)
-
-	config := Config{
-		ProjectId: "0123",
-		SecretKey: "cs-key",
-		ClientKey: "ck-key",
+	if err != nil {
+		t.Fatalf("Got an error but didn't want one. The error is %s", err)
 	}
-	sender := New(config)
-	reqMsg := RequestBody{
-		ClientId:        "123",
-		ProjectId:       "0123",
-		Type:            "template_name",
-		RecipientNumber: "089891234123",
-		Params: map[string]string{
-			"1": "John",
-			"2": "Depok",
-		},
-	}
-
-	res, _ := sender.SendMessage(reqMsg)
-
-	assert.Equal(t, "id-124", res.MessageId)
-	assert.Equal(t, "600", res.Status)
-	assert.Equal(t, "Not delivered, Contact validate Failed", res.Message)
-}
-
-func TestInvalidRequestFormat(t *testing.T) {
-	httpmock.ActivateNonDefault(client.GetClient())
-	defer httpmock.DeactivateAndReset()
-	mockGetAccessToken()
-
-	config := Config{
-		ProjectId: "0123",
-		SecretKey: "cs-key",
-		ClientKey: "ck-key",
-	}
-	sender := New(config)
-	var reqMsg  interface{}
-
-	_, err := sender.SendMessage(reqMsg)
-
-	assert.Equal(t, "invalid request message format", err.Error())
-}
-
-func mockGetAccessToken() {
-	fixture := `{ "status": "200", "message": "Success", "data": { "access_token": "677b800f9b694f98bb9db6edb18336743a3f416cadff1953a59190f309220936", "expired_datetime": "2020-12-28 10:20:23", "token_type": "Bearer" } }`
-	responder := httpmock.NewStringResponder(200, fixture)
-	fakeUrl := baseUrl + TokenEndpoint
-	httpmock.RegisterResponder("POST", fakeUrl, responder)
 }

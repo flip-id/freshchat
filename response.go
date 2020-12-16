@@ -1,8 +1,8 @@
 package freshchat
 
 type freshchatResponse struct {
-	success        successResponse
-	failed         failedResponse
+	success        *successResponse
+	failed         *failedResponse
 	httpStatusCode int
 	rawData        string
 }

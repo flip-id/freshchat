@@ -15,7 +15,7 @@ type WhatsappResult struct {
 	RawData        string
 }
 
-func sendWhatsappMessage(waRequest WhatsappRequest) (WhatsappResult, error) {
+func SendWhatsappMessage(waRequest WhatsappRequest) (WhatsappResult, error) {
 	body := requestBody{}
 	body.initialize()
 	body.setFrom(waRequest.FromPhoneNumber)
@@ -34,10 +34,10 @@ func sendWhatsappMessage(waRequest WhatsappRequest) (WhatsappResult, error) {
 	waResult.HttpStatusCode = response.httpStatusCode
 	waResult.RawData = response.rawData
 
-	if &response.success != nil {
+	if response.success != nil {
 		waResult.IsSuccess = true
 		waResult.Message = response.success.RequestId
-	} else if &response.failed != nil {
+	} else if response.failed != nil {
 		waResult.IsSuccess = false
 		waResult.Message = response.failed.Message
 	}
