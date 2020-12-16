@@ -1,4 +1,4 @@
-module github.com/flip-id/freshchat-client
+module github.com/flip-id/freshchat
 
 go 1.13
 
