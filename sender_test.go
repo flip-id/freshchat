@@ -37,7 +37,8 @@ func TestSendWhatsappMessage(t *testing.T) {
 
 		assert.Equal(t, true, result.IsSuccess, "IsSuccess")
 		assert.Equal(t, 202, result.HttpStatusCode, "HttpStatusCode")
-		assert.Equal(t, "0fcdd6b6-1f80-4643-a294-8e0625ce30dd", result.Message, "Message")
+		assert.Equal(t, "0fcdd6b6-1f80-4643-a294-8e0625ce30dd", result.MessageId, "MessageId")
+		assert.Equal(t, "", result.Message, "Message")
 		assert.Equal(t, mockResponse, result.RawData, "RawData")
 	})
 
@@ -68,6 +69,7 @@ func TestSendWhatsappMessage(t *testing.T) {
 
 		assert.Equal(t, false, result.IsSuccess, "IsSuccess")
 		assert.Equal(t, 404, result.HttpStatusCode, "HttpStatusCode")
+		assert.Equal(t, "", result.MessageId, "MessageId")
 		assert.Equal(t, "agent not found", result.Message, "Message")
 		assert.Equal(t, mockResponse, result.RawData, "RawData")
 	})

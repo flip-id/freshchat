@@ -11,6 +11,7 @@ type WhatsappRequest struct {
 type WhatsappResult struct {
 	IsSuccess      bool
 	HttpStatusCode int
+	MessageId      string
 	Message        string
 	RawData        string
 }
@@ -36,7 +37,7 @@ func SendWhatsappMessage(waRequest WhatsappRequest) (WhatsappResult, error) {
 
 	if response.success != nil {
 		waResult.IsSuccess = true
-		waResult.Message = response.success.RequestId
+		waResult.MessageId = response.success.RequestId
 	} else if response.failed != nil {
 		waResult.IsSuccess = false
 		waResult.Message = response.failed.Message
