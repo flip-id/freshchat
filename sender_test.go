@@ -1,8 +1,10 @@
 package freshchat
 
 import (
+	"encoding/json"
 	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 )
 
@@ -24,11 +26,10 @@ func TestSendWhatsappMessage(t *testing.T) {
 		httpmock.RegisterResponder("POST", url, responder)
 
 		request := WhatsappRequest{
-			FromPhoneNumber: "+62876543210",
-			ToPhoneNumber:   "+62891011121",
-			TemplateName:    "account_registration",
-			HeaderParams:    []string{"Test"},
-			BodyParams:      []string{"Test"},
+			ToPhoneNumber: "+628910111213",
+			TemplateName:  "account_registration",
+			HeaderParams:  []string{"Test"},
+			BodyParams:    []string{"Test"},
 		}
 
 		result, err := SendWhatsappMessage(request)
@@ -56,11 +57,10 @@ func TestSendWhatsappMessage(t *testing.T) {
 		httpmock.RegisterResponder("POST", url, responder)
 
 		request := WhatsappRequest{
-			FromPhoneNumber: "+62876543210",
-			ToPhoneNumber:   "+62891011121",
-			TemplateName:    "account_registration",
-			HeaderParams:    []string{"Test"},
-			BodyParams:      []string{"Test"},
+			ToPhoneNumber: "+628910111213",
+			TemplateName:  "account_registration",
+			HeaderParams:  []string{"Test"},
+			BodyParams:    []string{"Test"},
 		}
 
 		result, err := SendWhatsappMessage(request)
@@ -86,11 +86,10 @@ func TestSendWhatsappMessage(t *testing.T) {
 		httpmock.RegisterResponder("POST", url, responder)
 
 		request := WhatsappRequest{
-			FromPhoneNumber: "+62876543210",
-			ToPhoneNumber:   "+62891011121",
-			TemplateName:    "account_registration",
-			HeaderParams:    []string{"Test"},
-			BodyParams:      []string{"Test"},
+			ToPhoneNumber: "+62891011121",
+			TemplateName:  "account_registration",
+			HeaderParams:  []string{"Test"},
+			BodyParams:    []string{"Test"},
 		}
 
 		_, err := SendWhatsappMessage(request)
@@ -98,6 +97,62 @@ func TestSendWhatsappMessage(t *testing.T) {
 		if err == nil {
 			t.Errorf("Want an error but didn't get one")
 		}
+	})
+}
+
+func TestMakeRequestBody(t *testing.T) {
+	t.Run("success case", func(t *testing.T) {
+		request := WhatsappRequest{
+			ToPhoneNumber: "+628910111213",
+			TemplateName:  "account_registration",
+			HeaderParams:  []string{"Test", "Header"},
+			BodyParams:    []string{"Test", "Body"},
+		}
+
+		body := makeRequestBody(request)
+
+		byteJsonRequest, _ := json.Marshal(body)
+		actualJsonRequest := string(byteJsonRequest)
+
+		expectedJsonRequestFormatted := `{
+			"from": {
+				"phone_number": "` + fromPhoneNumber + `"
+			},
+			"provider": "whatsapp",
+			"to": {
+				"phone_number": "+628910111213"
+			},
+			"data": {
+				"message_template": {
+					"template_name": "account_registration",
+					"namespace": "` + namespace + `",
+					"language": {
+						"policy": "deterministic",
+						"code": "id"
+					},
+					"rich_template_data": {
+						"header": {
+							"type": "text",
+							"params": [
+								{"data": "Test"},
+								{"data": "Header"}
+							]
+						},
+						"body": {
+							"params": [
+								{"data": "Test"},
+								{"data": "Body"}
+							]
+						}
+					}
+				}
+			}
+		}`
+		expectedJsonRequest := strings.ReplaceAll(expectedJsonRequestFormatted, "\t", "")
+		expectedJsonRequest = strings.ReplaceAll(expectedJsonRequest, "\n", "")
+		expectedJsonRequest = strings.ReplaceAll(expectedJsonRequest, " ", "")
+
+		assert.Equal(t, expectedJsonRequest, actualJsonRequest)
 	})
 }
 

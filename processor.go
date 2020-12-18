@@ -23,7 +23,7 @@ func sendOutboundMessage(body requestBody) (freshchatResponse, error) {
 		return result, err
 	}
 
-	if responseCode(result.httpStatusCode) != Accepted {
+	if ResponseCode(result.httpStatusCode) != Accepted {
 		err = json.Unmarshal(response.Body(), &result.failed)
 
 		log.WithFields(log.Fields{

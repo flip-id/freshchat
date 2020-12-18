@@ -1,15 +1,15 @@
 package freshchat
 
-type responseCode int
+type ResponseCode int
 
 const (
-	Success             responseCode = 200
-	Accepted            responseCode = 202
-	BadRequest          responseCode = 400
-	Unauthenticated     responseCode = 401
-	Forbidden           responseCode = 403
-	NotFound            responseCode = 404
-	TooManyRequests     responseCode = 429
-	InternalServerError responseCode = 500
-	ServiceUnavailable  responseCode = 503
+	Success             ResponseCode = 200
+	Accepted            ResponseCode = 202
+	BadRequest          ResponseCode = 400
+	Unauthenticated     ResponseCode = 401
+	Forbidden           ResponseCode = 403
+	NotFound            ResponseCode = 404
+	TooManyRequests     ResponseCode = 429
+	InternalServerError ResponseCode = 500
+	ServiceUnavailable  ResponseCode = 503
 )

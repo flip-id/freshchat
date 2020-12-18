@@ -1,11 +1,10 @@
 package freshchat
 
 type WhatsappRequest struct {
-	FromPhoneNumber string
-	ToPhoneNumber   string
-	TemplateName    string
-	HeaderParams    []string
-	BodyParams      []string
+	ToPhoneNumber string
+	TemplateName  string
+	HeaderParams  []string
+	BodyParams    []string
 }
 
 type WhatsappResult struct {
@@ -17,13 +16,7 @@ type WhatsappResult struct {
 }
 
 func SendWhatsappMessage(waRequest WhatsappRequest) (WhatsappResult, error) {
-	body := requestBody{}
-	body.initialize()
-	body.setFrom(waRequest.FromPhoneNumber)
-	body.setTo(waRequest.ToPhoneNumber)
-	body.setTemplateName(waRequest.TemplateName)
-	body.setHeaderParams(waRequest.HeaderParams)
-	body.setBodyParams(waRequest.BodyParams)
+	body := makeRequestBody(waRequest)
 
 	response, err := sendOutboundMessage(body)
 	var waResult WhatsappResult
@@ -44,4 +37,16 @@ func SendWhatsappMessage(waRequest WhatsappRequest) (WhatsappResult, error) {
 	}
 
 	return waResult, err
+}
+
+func makeRequestBody(waRequest WhatsappRequest) requestBody {
+	body := requestBody{}
+	body.initialize()
+	body.setFrom(fromPhoneNumber)
+	body.setTo(waRequest.ToPhoneNumber)
+	body.setTemplateName(waRequest.TemplateName)
+	body.setHeaderParams(waRequest.HeaderParams)
+	body.setBodyParams(waRequest.BodyParams)
+
+	return body
 }
