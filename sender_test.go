@@ -150,7 +150,7 @@ func TestMakeRequestBody(t *testing.T) {
 		}`
 		expectedJsonRequest := strings.ReplaceAll(expectedJsonRequestFormatted, "\t", "")
 		expectedJsonRequest = strings.ReplaceAll(expectedJsonRequest, "\n", "")
-		expectedJsonRequest = strings.ReplaceAll(expectedJsonRequest, " ", "")
+		expectedJsonRequest = strings.ReplaceAll(expectedJsonRequest, " ", "") // Will also remove whitespace in params' value, be careful when changing the test
 
 		assert.Equal(t, expectedJsonRequest, actualJsonRequest)
 	})
