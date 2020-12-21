@@ -3,7 +3,6 @@ package freshchat
 type WhatsappRequest struct {
 	ToPhoneNumber string
 	TemplateName  string
-	HeaderParams  []string
 	BodyParams    []string
 }
 
@@ -45,7 +44,6 @@ func makeRequestBody(waRequest WhatsappRequest) requestBody {
 	body.setFrom(fromPhoneNumber)
 	body.addDestination(waRequest.ToPhoneNumber)
 	body.setTemplateName(waRequest.TemplateName)
-	body.setHeaderParams(waRequest.HeaderParams)
 	body.setBodyParams(waRequest.BodyParams)
 
 	return body

@@ -29,13 +29,7 @@ type language struct {
 }
 
 type richTemplateData struct {
-	Header header `json:"header"`
 	Body   body   `json:"body"`
-}
-
-type header struct {
-	Type   string  `json:"type"`
-	Params []param `json:"params"`
 }
 
 type body struct {
@@ -52,7 +46,6 @@ func (rb *requestBody) initialize() {
 	rb.Data.MessageTemplate.Namespace = namespace
 	rb.Data.MessageTemplate.Language.Policy = "deterministic"
 	rb.Data.MessageTemplate.Language.Code = "id"
-	rb.Data.MessageTemplate.RichTemplateData.Header.Type = "text"
 }
 
 func (rb *requestBody) setFrom(number string) {
@@ -65,16 +58,6 @@ func (rb *requestBody) addDestination(number string) {
 
 func (rb *requestBody) setTemplateName(templateName string) {
 	rb.Data.MessageTemplate.TemplateName = templateName
-}
-
-func (rb *requestBody) setHeaderParams(params []string) {
-	var headerParams []param
-
-	for _, inputParam := range params {
-		headerParams = append(headerParams, param{Data: inputParam})
-	}
-
-	rb.Data.MessageTemplate.RichTemplateData.Header.Params = headerParams
 }
 
 func (rb *requestBody) setBodyParams(params []string) {

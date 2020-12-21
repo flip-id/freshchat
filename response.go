@@ -16,6 +16,7 @@ type successResponse struct {
 type link struct {
 	Rel  string `json:"rel"`
 	Href string `json:"href"`
+	Type string `json:"type"`
 }
 
 type failedResponse struct {

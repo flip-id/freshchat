@@ -18,7 +18,8 @@ func TestSendWhatsappMessage(t *testing.T) {
 			"request_process_time": "1", 
 			"link": {
 				"rel": "string",
-				"href": "string"
+				"href": "string",
+				"type": "GET"
 			}
 		}`
 		responder := httpmock.NewStringResponder(202, mockResponse)
@@ -28,8 +29,7 @@ func TestSendWhatsappMessage(t *testing.T) {
 		request := WhatsappRequest{
 			ToPhoneNumber: "+628910111213",
 			TemplateName:  "account_registration",
-			HeaderParams:  []string{"Test"},
-			BodyParams:    []string{"Test"},
+			BodyParams:    []string{"14045"},
 		}
 
 		result, err := SendWhatsappMessage(request)
@@ -59,8 +59,7 @@ func TestSendWhatsappMessage(t *testing.T) {
 		request := WhatsappRequest{
 			ToPhoneNumber: "+628910111213",
 			TemplateName:  "account_registration",
-			HeaderParams:  []string{"Test"},
-			BodyParams:    []string{"Test"},
+			BodyParams:    []string{"14045"},
 		}
 
 		result, err := SendWhatsappMessage(request)
@@ -88,7 +87,6 @@ func TestSendWhatsappMessage(t *testing.T) {
 		request := WhatsappRequest{
 			ToPhoneNumber: "+62891011121",
 			TemplateName:  "account_registration",
-			HeaderParams:  []string{"Test"},
 			BodyParams:    []string{"Test"},
 		}
 
@@ -105,8 +103,7 @@ func TestMakeRequestBody(t *testing.T) {
 		request := WhatsappRequest{
 			ToPhoneNumber: "+628910111213",
 			TemplateName:  "account_registration",
-			HeaderParams:  []string{"Test", "Header"},
-			BodyParams:    []string{"Test", "Body"},
+			BodyParams:    []string{"14045"},
 		}
 
 		body := makeRequestBody(request)
@@ -120,9 +117,7 @@ func TestMakeRequestBody(t *testing.T) {
 			},
 			"provider": "whatsapp",
 			"to": [
-				{
-					"phone_number": "+628910111213"
-				}
+				{ "phone_number": "+628910111213" }
 			],
 			"data": {
 				"message_template": {
@@ -134,17 +129,9 @@ func TestMakeRequestBody(t *testing.T) {
 						"code": "id"
 					},
 					"rich_template_data": {
-						"header": {
-							"type": "text",
-							"params": [
-								{"data": "Test"},
-								{"data": "Header"}
-							]
-						},
 						"body": {
 							"params": [
-								{"data": "Test"},
-								{"data": "Body"}
+								{ "data": "14045" }
 							]
 						}
 					}
