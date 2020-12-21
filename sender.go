@@ -33,7 +33,7 @@ func SendWhatsappMessage(waRequest WhatsappRequest) (WhatsappResult, error) {
 		waResult.MessageId = response.success.RequestId
 	} else if response.failed != nil {
 		waResult.IsSuccess = false
-		waResult.Message = response.failed.Message
+		waResult.Message = response.failed.ErrorMessage
 	}
 
 	return waResult, err
@@ -43,7 +43,7 @@ func makeRequestBody(waRequest WhatsappRequest) requestBody {
 	body := requestBody{}
 	body.initialize()
 	body.setFrom(fromPhoneNumber)
-	body.setTo(waRequest.ToPhoneNumber)
+	body.addDestination(waRequest.ToPhoneNumber)
 	body.setTemplateName(waRequest.TemplateName)
 	body.setHeaderParams(waRequest.HeaderParams)
 	body.setBodyParams(waRequest.BodyParams)

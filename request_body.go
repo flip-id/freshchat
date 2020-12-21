@@ -1,17 +1,13 @@
 package freshchat
 
 type requestBody struct {
-	From     from   `json:"from"`
-	Provider string `json:"provider"`
-	To       to     `json:"to"`
-	Data     data   `json:"data"`
+	From     phoneNumber   `json:"from"`
+	Provider string        `json:"provider"`
+	To       []phoneNumber `json:"to"`
+	Data     data          `json:"data"`
 }
 
-type from struct {
-	PhoneNumber string `json:"phone_number"`
-}
-
-type to struct {
+type phoneNumber struct {
 	PhoneNumber string `json:"phone_number"`
 }
 
@@ -20,6 +16,7 @@ type data struct {
 }
 
 type messageTemplate struct {
+	Storage          string           `json:"storage"`
 	TemplateName     string           `json:"template_name"`
 	Namespace        string           `json:"namespace"`
 	Language         language         `json:"language"`
@@ -51,18 +48,19 @@ type param struct {
 
 func (rb *requestBody) initialize() {
 	rb.Provider = "whatsapp"
+	rb.Data.MessageTemplate.Storage = "none"
 	rb.Data.MessageTemplate.Namespace = namespace
 	rb.Data.MessageTemplate.Language.Policy = "deterministic"
 	rb.Data.MessageTemplate.Language.Code = "id"
 	rb.Data.MessageTemplate.RichTemplateData.Header.Type = "text"
 }
 
-func (rb *requestBody) setFrom(phoneNumber string) {
-	rb.From.PhoneNumber = phoneNumber
+func (rb *requestBody) setFrom(number string) {
+	rb.From.PhoneNumber = number
 }
 
-func (rb *requestBody) setTo(phoneNumber string) {
-	rb.To.PhoneNumber = phoneNumber
+func (rb *requestBody) addDestination(number string) {
+	rb.To = append(rb.To, phoneNumber{PhoneNumber: number})
 }
 
 func (rb *requestBody) setTemplateName(templateName string) {

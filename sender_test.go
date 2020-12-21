@@ -48,9 +48,9 @@ func TestSendWhatsappMessage(t *testing.T) {
 		defer httpmock.DeactivateAndReset()
 
 		mockResponse := `{ 
-			"code": 404,
-			"status": "AGENT_NOT_FOUND",
-			"message": "agent not found"
+			"success": false,
+			"error_code": 404,
+			"error_message": "invalid request format"
 		}`
 		responder := httpmock.NewStringResponder(404, mockResponse)
 		url := baseUrl + sendMessageUrl
@@ -70,7 +70,7 @@ func TestSendWhatsappMessage(t *testing.T) {
 		assert.Equal(t, false, result.IsSuccess, "IsSuccess")
 		assert.Equal(t, 404, result.HttpStatusCode, "HttpStatusCode")
 		assert.Equal(t, "", result.MessageId, "MessageId")
-		assert.Equal(t, "agent not found", result.Message, "Message")
+		assert.Equal(t, "invalid request format", result.Message, "Message")
 		assert.Equal(t, mockResponse, result.RawData, "RawData")
 	})
 
@@ -119,11 +119,14 @@ func TestMakeRequestBody(t *testing.T) {
 				"phone_number": "` + fromPhoneNumber + `"
 			},
 			"provider": "whatsapp",
-			"to": {
-				"phone_number": "+628910111213"
-			},
+			"to": [
+				{
+					"phone_number": "+628910111213"
+				}
+			],
 			"data": {
 				"message_template": {
+					"storage": "none",
 					"template_name": "account_registration",
 					"namespace": "` + namespace + `",
 					"language": {
@@ -150,7 +153,7 @@ func TestMakeRequestBody(t *testing.T) {
 		}`
 		expectedJsonRequest := strings.ReplaceAll(expectedJsonRequestFormatted, "\t", "")
 		expectedJsonRequest = strings.ReplaceAll(expectedJsonRequest, "\n", "")
-		expectedJsonRequest = strings.ReplaceAll(expectedJsonRequest, " ", "") // Will also remove whitespace in params' value, be careful when changing the test
+		expectedJsonRequest = strings.ReplaceAll(expectedJsonRequest, " ", "") // Will also remove whitespace in params' value, be careful when changing this test
 
 		assert.Equal(t, expectedJsonRequest, actualJsonRequest)
 	})
