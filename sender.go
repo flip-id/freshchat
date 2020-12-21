@@ -14,7 +14,7 @@ type WhatsappResult struct {
 	RawData        string
 }
 
-func SendWhatsappMessage(waRequest WhatsappRequest) (WhatsappResult, error) {
+func SendOtpMessage(waRequest WhatsappRequest) (WhatsappResult, error) {
 	body := makeRequestBody(waRequest)
 
 	response, err := sendOutboundMessage(body)

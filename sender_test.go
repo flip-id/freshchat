@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestSendWhatsappMessage(t *testing.T) {
+func TestSendOtpMessage(t *testing.T) {
 	t.Run("success case", func(t *testing.T) {
 		httpmock.ActivateNonDefault(client.GetClient())
 		defer httpmock.DeactivateAndReset()
@@ -32,7 +32,7 @@ func TestSendWhatsappMessage(t *testing.T) {
 			BodyParams:    []string{"14045"},
 		}
 
-		result, err := SendWhatsappMessage(request)
+		result, err := SendOtpMessage(request)
 
 		assertNoError(t, err)
 
@@ -62,7 +62,7 @@ func TestSendWhatsappMessage(t *testing.T) {
 			BodyParams:    []string{"14045"},
 		}
 
-		result, err := SendWhatsappMessage(request)
+		result, err := SendOtpMessage(request)
 
 		assertNoError(t, err)
 
@@ -90,7 +90,7 @@ func TestSendWhatsappMessage(t *testing.T) {
 			BodyParams:    []string{"Test"},
 		}
 
-		_, err := SendWhatsappMessage(request)
+		_, err := SendOtpMessage(request)
 
 		if err == nil {
 			t.Errorf("Want an error but didn't get one")
