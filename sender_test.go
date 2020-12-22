@@ -26,7 +26,7 @@ func TestSendOtpMessage(t *testing.T) {
 		url := baseUrl + sendMessageUrl
 		httpmock.RegisterResponder("POST", url, responder)
 
-		request := WhatsappRequest{
+		request := OtpRequest{
 			ToPhoneNumber: "+628910111213",
 			TemplateName:  "account_registration",
 			BodyParams:    []string{"14045"},
@@ -56,7 +56,7 @@ func TestSendOtpMessage(t *testing.T) {
 		url := baseUrl + sendMessageUrl
 		httpmock.RegisterResponder("POST", url, responder)
 
-		request := WhatsappRequest{
+		request := OtpRequest{
 			ToPhoneNumber: "+628910111213",
 			TemplateName:  "account_registration",
 			BodyParams:    []string{"14045"},
@@ -84,7 +84,7 @@ func TestSendOtpMessage(t *testing.T) {
 		url := baseUrl + sendMessageUrl
 		httpmock.RegisterResponder("POST", url, responder)
 
-		request := WhatsappRequest{
+		request := OtpRequest{
 			ToPhoneNumber: "+62891011121",
 			TemplateName:  "account_registration",
 			BodyParams:    []string{"Test"},
@@ -100,7 +100,7 @@ func TestSendOtpMessage(t *testing.T) {
 
 func TestMakeRequestBody(t *testing.T) {
 	t.Run("success case", func(t *testing.T) {
-		request := WhatsappRequest{
+		request := OtpRequest{
 			ToPhoneNumber: "+628910111213",
 			TemplateName:  "account_registration",
 			BodyParams:    []string{"14045"},

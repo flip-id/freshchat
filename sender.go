@@ -1,12 +1,12 @@
 package freshchat
 
-type WhatsappRequest struct {
+type OtpRequest struct {
 	ToPhoneNumber string
 	TemplateName  string
 	BodyParams    []string
 }
 
-type WhatsappResult struct {
+type OtpResult struct {
 	IsSuccess      bool
 	HttpStatusCode int
 	MessageId      string
@@ -14,37 +14,37 @@ type WhatsappResult struct {
 	RawData        string
 }
 
-func SendOtpMessage(waRequest WhatsappRequest) (WhatsappResult, error) {
-	body := makeRequestBody(waRequest)
+func SendOtpMessage(otpRequest OtpRequest) (OtpResult, error) {
+	body := makeRequestBody(otpRequest)
 
 	response, err := sendOutboundMessage(body)
-	var waResult WhatsappResult
+	var otpResult OtpResult
 
 	if &response == nil {
-		return waResult, err
+		return otpResult, err
 	}
 
-	waResult.HttpStatusCode = response.httpStatusCode
-	waResult.RawData = response.rawData
+	otpResult.HttpStatusCode = response.httpStatusCode
+	otpResult.RawData = response.rawData
 
 	if response.success != nil {
-		waResult.IsSuccess = true
-		waResult.MessageId = response.success.RequestId
+		otpResult.IsSuccess = true
+		otpResult.MessageId = response.success.RequestId
 	} else if response.failed != nil {
-		waResult.IsSuccess = false
-		waResult.Message = response.failed.ErrorMessage
+		otpResult.IsSuccess = false
+		otpResult.Message = response.failed.ErrorMessage
 	}
 
-	return waResult, err
+	return otpResult, err
 }
 
-func makeRequestBody(waRequest WhatsappRequest) requestBody {
+func makeRequestBody(otpRequest OtpRequest) requestBody {
 	body := requestBody{}
 	body.initialize()
 	body.setFrom(fromPhoneNumber)
-	body.addDestination(waRequest.ToPhoneNumber)
-	body.setTemplateName(waRequest.TemplateName)
-	body.setBodyParams(waRequest.BodyParams)
+	body.addDestination(otpRequest.ToPhoneNumber)
+	body.setTemplateName(otpRequest.TemplateName)
+	body.setBodyParams(otpRequest.BodyParams)
 
 	return body
 }
