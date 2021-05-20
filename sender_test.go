@@ -99,7 +99,7 @@ func TestSendOtpMessage(t *testing.T) {
 }
 
 func TestMakeRequestBody(t *testing.T) {
-	t.Run("success case", func(t *testing.T) {
+	t.Run("success case - one parameter", func(t *testing.T) {
 		request := OtpRequest{
 			ToPhoneNumber: "+628910111213",
 			TemplateName:  "account_registration",
@@ -132,6 +132,57 @@ func TestMakeRequestBody(t *testing.T) {
 						"body": {
 							"params": [
 								{ "data": "14045" }
+							]
+						}
+					}
+				}
+			}
+		}`
+		expectedJsonRequest := strings.ReplaceAll(expectedJsonRequestFormatted, "\t", "")
+		expectedJsonRequest = strings.ReplaceAll(expectedJsonRequest, "\n", "")
+		expectedJsonRequest = strings.ReplaceAll(expectedJsonRequest, " ", "") // Will also remove whitespace in params' value, be careful when changing this test
+
+		assert.Equal(t, expectedJsonRequest, actualJsonRequest)
+	})
+
+	t.Run("success case - many parameter", func(t *testing.T) {
+		request := OtpRequest{
+			ToPhoneNumber: "+628910111213",
+			TemplateName:  "info_transfer",
+			BodyParams:    []string{"sender_name", "receiver_name", "amount", "YYYY-MM-DD_HH:mm", "https://receipt.link/sample", "flip.id"},
+		}
+
+		body := makeRequestBody(request)
+
+		byteJsonRequest, _ := json.Marshal(body)
+		actualJsonRequest := string(byteJsonRequest)
+
+		expectedJsonRequestFormatted := `{
+			"from": {
+				"phone_number": "` + fromPhoneNumber + `"
+			},
+			"provider": "whatsapp",
+			"to": [
+				{ "phone_number": "+628910111213" }
+			],
+			"data": {
+				"message_template": {
+					"storage": "none",
+					"template_name": "info_transfer",
+					"namespace": "` + namespace + `",
+					"language": {
+						"policy": "deterministic",
+						"code": "id"
+					},
+					"rich_template_data": {
+						"body": {
+							"params": [
+								{ "data": "sender_name" },
+								{ "data": "receiver_name" },
+								{ "data": "amount" },
+								{ "data": "YYYY-MM-DD_HH:mm" },
+								{ "data": "https://receipt.link/sample" },
+								{ "data": "flip.id" }
 							]
 						}
 					}
