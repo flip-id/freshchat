@@ -40,7 +40,7 @@ type param struct {
 	Data string `json:"data"`
 }
 
-func (rb *requestBody) initialize() {
+func (rb *requestBody) initialize(namespace string) {
 	rb.Provider = "whatsapp"
 	rb.Data.MessageTemplate.Storage = "none"
 	rb.Data.MessageTemplate.Namespace = namespace
