@@ -8,43 +8,36 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const SEND_MESSAGE_ENDPOINT = "/v2/outbound-messages/whatsapp"
-const CONNECTION_TIME_OUT = 15
+const (
+	// EndpointSendMessage is the endpoint for sending a message.
+	EndpointSendMessage = "/v2/outbound-messages/whatsapp"
+)
 
-type Config struct {
-	BaseUrl         string
-	NameSpace       string
-	ApiToken        string
-	FromPhoneNumber string
+// Client is the client for sending messages in the Freshchat.
+type Client interface{}
+
+type client struct {
+	opt *Option
 }
 
-type Sender struct {
-	Config Config
-	Client *resty.Client
-}
-
-type OtpRequest struct {
-	ToPhoneNumber string
-	TemplateName  string
-	BodyParams    []string
-}
-
-type OtpResult struct {
-	IsSuccess      bool
-	HttpStatusCode int
-	MessageId      string
-	Message        string
-	RawData        string
-}
-
-func New(config Config) *Sender {
-	return &Sender{
-		Config: config,
-		Client: resty.New().SetTimeout(time.Second * time.Duration(CONNECTION_TIME_OUT)).SetAuthToken(config.ApiToken),
+func (c *client) Assign(o *Option) *client {
+	if o == nil {
+		return c
 	}
+
+	c.opt = o.Clone()
+	return c
 }
 
-func (s *Sender) SendOtpMessage(otpRequest OtpRequest) (OtpResult, error) {
+// NewClient creates a new Freshchat client.
+func NewClient(opts ...FnOption) Client {
+	o := (new(Option)).Assign(opts...).Default()
+	return (new(client)).Assign(o)
+}
+
+func (c *client) SendMessage()
+
+func (s *client) SendOtpMessage(otpRequest OtpRequest) (OtpResult, error) {
 	body := s.makeRequestBody(otpRequest)
 
 	response, err := s.sendOutboundMessage(body)
@@ -68,7 +61,7 @@ func (s *Sender) SendOtpMessage(otpRequest OtpRequest) (OtpResult, error) {
 	return otpResult, err
 }
 
-func (s *Sender) makeRequestBody(otpRequest OtpRequest) requestBody {
+func (s *client) makeRequestBody(otpRequest OtpRequest) requestBody {
 	body := requestBody{}
 	body.initialize(s.Config.NameSpace)
 	body.setFrom(s.Config.FromPhoneNumber)
@@ -79,8 +72,7 @@ func (s *Sender) makeRequestBody(otpRequest OtpRequest) requestBody {
 	return body
 }
 
-
-func (s *Sender) sendOutboundMessage(body requestBody) (freshchatResponse, error) {
+func (s *client) sendOutboundMessage(body requestBody) (freshchatResponse, error) {
 	url := s.Config.BaseUrl + SEND_MESSAGE_ENDPOINT
 	response, err := s.Client.R().SetBody(body).Post(url)
 	result := freshchatResponse{

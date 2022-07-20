@@ -1,42 +1,49 @@
 package freshchat
 
-type requestBody struct {
-	From     phoneNumber   `json:"from"`
+// RequestWhatsappMessage is a request for sending a message to a user.
+type RequestWhatsappMessage struct {
+	From     RequestFrom   `json:"from"`
 	Provider string        `json:"provider"`
-	To       []phoneNumber `json:"to"`
-	Data     data          `json:"data"`
+	To       []RequestFrom `json:"to"`
+	Data     RequestData   `json:"data"`
 }
 
-type phoneNumber struct {
+// RequestFrom is a request for specifying the sender number.
+type RequestFrom struct {
 	PhoneNumber string `json:"phone_number"`
 }
 
-type data struct {
-	MessageTemplate messageTemplate `json:"message_template"`
+// RequestData is a request for specifying the message data.
+type RequestData struct {
+	MessageTemplate RequestMessageTemplate `json:"message_template"`
 }
 
-type messageTemplate struct {
-	Storage          string           `json:"storage"`
-	TemplateName     string           `json:"template_name"`
-	Namespace        string           `json:"namespace"`
-	Language         language         `json:"language"`
-	RichTemplateData richTemplateData `json:"rich_template_data"`
+// RequestMessageTemplate is a request for specifying the message template.
+type RequestMessageTemplate struct {
+	Storage          string                  `json:"storage"`
+	TemplateName     string                  `json:"template_name"`
+	Namespace        string                  `json:"namespace"`
+	Language         RequestLanguage         `json:"language"`
+	RichTemplateData RequestRichTemplateData `json:"rich_template_data"`
 }
 
-type language struct {
+// RequestLanguage is a request for specifying the language.
+type RequestLanguage struct {
 	Policy string `json:"policy"`
 	Code   string `json:"code"`
 }
 
-type richTemplateData struct {
-	Body   body   `json:"body"`
+// RequestRichTemplateData is a request for specifying the rich template data.
+type RequestRichTemplateData struct {
+	Body RequestRichTmplBody `json:"body"`
 }
 
-type body struct {
-	Params []param `json:"params"`
+// RequestRichTmplBody is a request for specifying the rich template body.
+type RequestRichTmplBody struct {
+	Params []RequestRichTmplParamsData `json:"params"`
 }
 
-type param struct {
+type RequestRichTmplParamsData struct {
 	Data string `json:"data"`
 }
 
@@ -53,7 +60,7 @@ func (rb *requestBody) setFrom(number string) {
 }
 
 func (rb *requestBody) addDestination(number string) {
-	rb.To = append(rb.To, phoneNumber{PhoneNumber: number})
+	rb.To = append(rb.To, PhoneNumber{PhoneNumber: number})
 }
 
 func (rb *requestBody) setTemplateName(templateName string) {
@@ -61,10 +68,10 @@ func (rb *requestBody) setTemplateName(templateName string) {
 }
 
 func (rb *requestBody) setBodyParams(params []string) {
-	var bodyParams []param
+	var bodyParams []RequestRichTmplParamsData
 
 	for _, inputParam := range params {
-		bodyParams = append(bodyParams, param{Data: inputParam})
+		bodyParams = append(bodyParams, RequestRichTmplParamsData{Data: inputParam})
 	}
 
 	rb.Data.MessageTemplate.RichTemplateData.Body.Params = bodyParams
