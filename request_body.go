@@ -17,10 +17,10 @@ const (
 
 // RequestWhatsappMessage is a request for sending a message to a user.
 type RequestWhatsappMessage struct {
-	From     RequestFrom   `json:"from"`
-	Provider string        `json:"provider"`
-	To       []RequestFrom `json:"to"`
-	Data     RequestData   `json:"data"`
+	From     RequestFrom    `json:"from"`
+	Provider string         `json:"provider"`
+	To       []*RequestFrom `json:"to"`
+	Data     RequestData    `json:"data"`
 
 	// Response Attributes Below
 	MessageID     string `json:"message_id,omitempty"`
@@ -57,7 +57,7 @@ func (r *RequestWhatsappMessage) AddDestination(phoneNumber string) *RequestWhat
 		return r
 	}
 
-	r.To = append(r.To, RequestFrom{PhoneNumber: phoneNumber})
+	r.To = append(r.To, &RequestFrom{PhoneNumber: phoneNumber})
 	return r
 }
 
@@ -67,9 +67,9 @@ func (r *RequestWhatsappMessage) SetDestinations(phoneNumbers []string) *Request
 		return r
 	}
 
-	var newTo []RequestFrom
+	var newTo []*RequestFrom
 	for _, number := range phoneNumbers {
-		newTo = append(newTo, RequestFrom{PhoneNumber: number})
+		newTo = append(newTo, &RequestFrom{PhoneNumber: number})
 	}
 
 	r.To = newTo
@@ -132,6 +132,10 @@ func (r *RequestWhatsappMessage) SetHeaderMediaURL(url string) *RequestWhatsappM
 		return r
 	}
 
+	if r.Data.MessageTemplate.RichTemplateData.Header == nil {
+		r.Data.MessageTemplate.RichTemplateData.Header = new(RequestRichTmplHeader)
+	}
+
 	r.Data.MessageTemplate.RichTemplateData.Header.MediaURL = url
 	return r
 }
@@ -142,13 +146,19 @@ func (r *RequestWhatsappMessage) SetHeaderType(headerType string) *RequestWhatsa
 		return r
 	}
 
+	if r.Data.MessageTemplate.RichTemplateData.Header == nil {
+		r.Data.MessageTemplate.RichTemplateData.Header = new(RequestRichTmplHeader)
+	}
+
 	r.Data.MessageTemplate.RichTemplateData.Header.Type = headerType
 	return r
 }
 
 // SetHeaderParams sets the header params for the message.
 func (r *RequestWhatsappMessage) SetHeaderParams(params []string) *RequestWhatsappMessage {
-	if len(params) <= 0 && !(r.Data.MessageTemplate.RichTemplateData.Header.Type == "text") {
+	if len(params) <= 0 ||
+		r.Data.MessageTemplate.RichTemplateData.Header == nil ||
+		r.Data.MessageTemplate.RichTemplateData.Header.Type != "text" {
 		return r
 	}
 
@@ -177,17 +187,17 @@ func (r *RequestWhatsappMessage) SetParams(params []string) *RequestWhatsappMess
 }
 
 // Default is a default for RequestWhatsappMessage.
-func (r *RequestWhatsappMessage) Default() *RequestWhatsappMessage {
-	r.From.Default()
+func (r *RequestWhatsappMessage) Default(o *Option) *RequestWhatsappMessage {
+	r.From.Default(o, TypePhoneSender)
 	if r.Provider == "" {
 		r.Provider = DefaultProviderWhatsapp
 	}
 
-	for _, to := range r.To {
-		to.Default()
+	for idx, to := range r.To {
+		r.To[idx] = to.Default(o, TypePhoneDestination)
 	}
 
-	r.Data.Default()
+	r.Data.Default(o)
 	return r
 }
 
@@ -196,8 +206,19 @@ type RequestFrom struct {
 	PhoneNumber string `json:"phone_number"`
 }
 
+const (
+	// TypePhoneSender is the type for phone sender.
+	TypePhoneSender = "sender"
+	// TypePhoneDestination is the type for phone destination.
+	TypePhoneDestination = "destination"
+)
+
 // Default is a default for RequestFrom.
-func (r *RequestFrom) Default() *RequestFrom {
+func (r *RequestFrom) Default(o *Option, typePhone string) *RequestFrom {
+	if r.PhoneNumber == "" && o != nil && typePhone == TypePhoneSender {
+		r.PhoneNumber = o.FromPhoneNumber
+	}
+
 	r.PhoneNumber = "+" + phone.NormalizeID(r.PhoneNumber, 0)
 	return r
 }
@@ -208,8 +229,8 @@ type RequestData struct {
 }
 
 // Default is a default for RequestData.
-func (r *RequestData) Default() *RequestData {
-	r.MessageTemplate.Default()
+func (r *RequestData) Default(o *Option) *RequestData {
+	r.MessageTemplate.Default(o)
 	return r
 }
 
@@ -223,12 +244,16 @@ type RequestMessageTemplate struct {
 }
 
 // Default is a default for RequestMessageTemplate.
-func (r *RequestMessageTemplate) Default() *RequestMessageTemplate {
+func (r *RequestMessageTemplate) Default(o *Option) *RequestMessageTemplate {
 	if r.Storage == "" {
 		r.Storage = DefaultStorage
 	}
 
-	r.Language.Default()
+	if r.Namespace == "" && o != nil {
+		r.Namespace = o.NameSpace
+	}
+
+	r.Language.Default(o)
 	return r
 }
 
@@ -239,7 +264,7 @@ type RequestLanguage struct {
 }
 
 // Default is a default for RequestLanguage.
-func (r *RequestLanguage) Default() *RequestLanguage {
+func (r *RequestLanguage) Default(o *Option) *RequestLanguage {
 	if r.Policy == "" {
 		r.Policy = DefaultLanguagePolicy
 	}
@@ -252,8 +277,8 @@ func (r *RequestLanguage) Default() *RequestLanguage {
 
 // RequestRichTemplateData is a request for specifying the rich template data.
 type RequestRichTemplateData struct {
-	Header RequestRichTmplHeader `json:"header,omitempty"`
-	Body   RequestRichTmplBody   `json:"body"`
+	Header *RequestRichTmplHeader `json:"header,omitempty"`
+	Body   RequestRichTmplBody    `json:"body"`
 }
 
 // RequestRichTmplHeader is a request for specifying the rich template header.

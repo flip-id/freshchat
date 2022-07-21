@@ -1,11 +1,12 @@
 package freshchat
 
 import (
+	"context"
 	"encoding/json"
-	"time"
+	"net/http"
 
-	"github.com/go-resty/resty/v2"
-	log "github.com/sirupsen/logrus"
+	"github.com/fairyhunter13/pool"
+	"github.com/gofiber/fiber/v2"
 )
 
 const (
@@ -14,7 +15,9 @@ const (
 )
 
 // Client is the client for sending messages in the Freshchat.
-type Client interface{}
+type Client interface {
+	SendMessage(ctx context.Context, req *RequestWhatsappMessage) (res *ResponseFreshchat, err error)
+}
 
 type client struct {
 	opt *Option
@@ -35,71 +38,58 @@ func NewClient(opts ...FnOption) Client {
 	return (new(client)).Assign(o)
 }
 
-func (c *client) SendMessage()
-
-func (s *client) SendOtpMessage(otpRequest OtpRequest) (OtpResult, error) {
-	body := s.makeRequestBody(otpRequest)
-
-	response, err := s.sendOutboundMessage(body)
-	var otpResult OtpResult
-
-	if &response == nil {
-		return otpResult, err
+// SendMessage sends a Whatsapp message to the Freshchat.
+func (c *client) SendMessage(ctx context.Context, req *RequestWhatsappMessage) (res *ResponseFreshchat, err error) {
+	if req == nil {
+		err = ErrNilArguments
+		return
 	}
 
-	otpResult.HttpStatusCode = response.httpStatusCode
-	otpResult.RawData = response.rawData
-
-	if response.success != nil {
-		otpResult.IsSuccess = true
-		otpResult.MessageId = response.success.RequestId
-	} else if response.failed != nil {
-		otpResult.IsSuccess = false
-		otpResult.Message = response.failed.ErrorMessage
-	}
-
-	return otpResult, err
-}
-
-func (s *client) makeRequestBody(otpRequest OtpRequest) requestBody {
-	body := requestBody{}
-	body.initialize(s.Config.NameSpace)
-	body.setFrom(s.Config.FromPhoneNumber)
-	body.addDestination(otpRequest.ToPhoneNumber)
-	body.setTemplateName(otpRequest.TemplateName)
-	body.setBodyParams(otpRequest.BodyParams)
-
-	return body
-}
-
-func (s *client) sendOutboundMessage(body requestBody) (freshchatResponse, error) {
-	url := s.Config.BaseUrl + SEND_MESSAGE_ENDPOINT
-	response, err := s.Client.R().SetBody(body).Post(url)
-	result := freshchatResponse{
-		success: nil,
-		failed:  nil,
-	}
-
-	if response != nil {
-		result.httpStatusCode = response.StatusCode()
-		result.rawData = string(response.Body())
-	}
-
+	resp, err := c.doRequest(ctx, EndpointSendMessage, req.Default(c.opt))
+	defer c.closeResponse(resp)
 	if err != nil {
-		log.Error(err)
-		return result, err
+		return
 	}
 
-	if ResponseCode(result.httpStatusCode) != Accepted {
-		err = json.Unmarshal(response.Body(), &result.failed)
+	res, err = (new(ResponseFreshchat)).assign(resp)
+	return
+}
 
-		log.WithFields(log.Fields{
-			"message":  "Failed to send WhatsappMessage via Freshchat",
-			"response": response,
-		}).Warn()
-	} else {
-		err = json.Unmarshal(response.Body(), &result.success)
+func (c *client) closeResponse(resp *http.Response) {
+	if resp == nil || resp.Body == nil {
+		return
 	}
 
-	return result, err
+	_ = resp.Body.Close()
+}
+
+const (
+	// HeaderBearerPrefix is the prefix for the Bearer token.
+	HeaderBearerPrefix = "Bearer "
+)
+
+func (c *client) prepareRequest(ctx context.Context, req *http.Request) *http.Request {
+	req.Header.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSON)
+	req.Header.Set(fiber.HeaderAuthorization, HeaderBearerPrefix+c.opt.APIToken)
+	req = req.WithContext(ctx)
+	return req
+}
+
+func (c *client) doRequest(ctx context.Context, endpoint string, message interface{}) (resp *http.Response, err error) {
+	buff := pool.GetBuffer()
+	defer pool.Put(buff)
+
+	err = json.NewEncoder(buff).Encode(message)
+	if err != nil {
+		return
+	}
+
+	url := c.opt.BaseURL + endpoint
+	req, err := http.NewRequest(http.MethodPost, url, buff)
+	if err != nil {
+		return
+	}
+
+	resp, err = c.opt.client.Do(c.prepareRequest(ctx, req))
+	return
 }
