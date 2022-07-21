@@ -5,6 +5,7 @@ import (
 	"github.com/gojek/heimdall/v7"
 	"github.com/gojek/heimdall/v7/hystrix"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -51,6 +52,7 @@ func (o *Option) Default() *Option {
 		o.BaseURL = DefaultBaseURLAustralia
 	}
 
+	o.BaseURL = strings.TrimSuffix(o.BaseURL, "/")
 	if o.Timeout < DefaultTimeout {
 		o.Timeout = DefaultTimeout
 	}
