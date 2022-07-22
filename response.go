@@ -49,7 +49,6 @@ func (r *ResponseFreshchat) assign(resp *http.Response) (res *ResponseFreshchat,
 func (r *ResponseFreshchat) getError() (err error) {
 	if r.HTTPStatusCode >= http.StatusBadRequest {
 		err = r.Failed
-		return
 	}
 
 	return
