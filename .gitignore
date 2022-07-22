@@ -1,3 +1,9 @@
 .env
-.idea
 .DS_Store
+
+# Editor Configs
+.vscode
+.idea
+
+# .env file
+.env
