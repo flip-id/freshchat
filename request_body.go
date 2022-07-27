@@ -2,6 +2,7 @@ package freshchat
 
 import (
 	"github.com/fairyhunter13/phone"
+	"strings"
 )
 
 const (
@@ -219,6 +220,7 @@ func (r *RequestFrom) Default(o *Option, typePhone string) *RequestFrom {
 		r.PhoneNumber = o.FromPhoneNumber
 	}
 
+	r.PhoneNumber = strings.TrimLeft(r.PhoneNumber, "+")
 	r.PhoneNumber = "+" + phone.NormalizeID(r.PhoneNumber, 0)
 	return r
 }

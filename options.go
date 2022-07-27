@@ -52,7 +52,7 @@ func (o *Option) Default() *Option {
 		o.BaseURL = DefaultBaseURLAustralia
 	}
 
-	o.BaseURL = strings.TrimSuffix(o.BaseURL, "/")
+	o.BaseURL = strings.TrimRight(o.BaseURL, "/")
 	if o.Timeout < DefaultTimeout {
 		o.Timeout = DefaultTimeout
 	}
