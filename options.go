@@ -83,8 +83,8 @@ func WithNameSpace(nameSpace string) FnOption {
 	}
 }
 
-// WithApiToken sets the API token for the Freshchat API.
-func WithApiToken(apiToken string) FnOption {
+// WithAPIToken sets the API token for the Freshchat API.
+func WithAPIToken(apiToken string) FnOption {
 	return func(o *Option) {
 		o.APIToken = apiToken
 	}

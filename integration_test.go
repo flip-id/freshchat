@@ -31,7 +31,7 @@ func setupClient() {
 		}
 
 		c = NewClient(
-			WithApiToken(os.Getenv("FRESHCHAT_API_TOKEN")),
+			WithAPIToken(os.Getenv("FRESHCHAT_API_TOKEN")),
 			WithNameSpace(os.Getenv("FRESHCHAT_NAMESPACE")),
 			WithFromPhoneNumber(os.Getenv("FRESHCHAT_FROM_PHONE_NUMBER")),
 		)
